@@ -1,0 +1,12 @@
+# Ce playbook configure les dépots officiels Docker puis installe docker et docker compose et ajoute l'utilisateur ansible au groupe docker
+---
+- name: Install Docker and add docker user to docker group
+  hosts: [swarm]
+  become: true
+  vars:
+    docker_user: "ansible"  # Remplacez par le nom d'utilisateur souhaité
+    docker_architecture: "{{ lookup('pipe', 'dpkg --print-architecture') }}"
+    docker_codename: "{{ ansible_facts['distribution_release'] }}"
+
+  roles:
+    - docker-setup

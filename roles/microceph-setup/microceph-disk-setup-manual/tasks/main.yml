@@ -1,0 +1,39 @@
+# Ce role ajoute des disques en OSD a un cluster microceph
+# sélectionner les diques a ajouter dans l'inventory.ini
+# Attention: ce role fonctionne seulement si tous les noeuds ont sur leur disque la même lettre
+# Tous /dev/sda par exemple
+- name: Check if MicroCeph database is initialized
+  command: "microceph status"
+  register: microceph_status
+  failed_when: microceph_status.rc != 0
+  changed_when: false
+
+- name: Fail if database is not initialized
+  fail:
+    msg: "MicroCeph database is not initialized yet. Initialize the cluster first."
+  when: "'Database is not yet initialized' in microceph_status.stderr"
+
+- name: Fail if no disks are specified
+  fail:
+    msg: "No disks specified for MicroCeph. Please add disks_to_add list to inventory."
+  when: disks_to_add | length == 0
+
+# - name: Dump every line of the status for inspection
+#   debug:
+#     var: microceph_status.stdout_lines
+
+- name: Sum up all disk counts from MicroCeph status
+  set_fact:
+    microceph_disk_count: "{{ microceph_status.stdout | regex_findall('Disks:\\s*(\\d+)') | map('int') | sum | int }}"
+
+- name: Add Disks to MicroCeph cluster
+  when: microceph_disk_count | int != 3
+  block:
+    - name: Add disk to MicroCeph Cluster loop
+      command: "microceph disk add {{ item }} {{ '--wipe' if wipe_disks else '' }}"
+      loop: "{{ disks_to_add }}"
+      register: disk_add_result
+      changed_when: "'already added' not in disk_add_result.stderr"
+      failed_when:
+        - disk_add_result.rc != 0
+        - "'already added' not in disk_add_result.stderr"

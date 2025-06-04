@@ -1,0 +1,13 @@
+# Ce playbook teste le fonctionnement de Docker avec conteneur test
+---
+- name: Setup for Docker operations
+  hosts: [test]
+  # become: true
+
+
+  tasks:
+    - name: Run the helloworld Docker container
+      community.docker.docker_container:
+        name: helloworld
+        image: hello-world
+        state: started

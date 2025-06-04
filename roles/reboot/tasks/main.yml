@@ -1,0 +1,6 @@
+# Ce role redémarre les noeuds cible
+---
+- name: Reboot the machine
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible"
+    reboot_timeout: 600

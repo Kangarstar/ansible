@@ -1,0 +1,77 @@
+# Ce rôle configure les dépots officiels Docker puis installe docker et docker compose et ajoute l'utilisateur ansible au groupe docker
+---
+# - name: Update apt cache
+#   ansible.builtin.apt:
+#     update_cache: true
+
+# - name: Install required packages
+#   ansible.builtin.apt:
+#     name:
+#       - ca-certificates
+#       - curl
+#     state: present
+
+- name: Create keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  register: docker_key_result
+  retries: 5
+  delay: 10
+  until: docker_key_result is succeeded
+
+- name: Fail if Docker GPG key installation was unsuccessful
+  fail:
+    msg: "Docker GPG key failed to install after multiple retries."
+  when: docker_key_result is failed
+
+- name: Add Docker repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/docker.list
+    content: |
+      deb [arch={{ docker_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ docker_codename }} stable
+    mode: '0644'
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Docker packages
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - python3-docker
+    state: present
+  retries: 3
+
+- name: Ensure Docker service is enabled and running
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+  register: docker_service_result
+  ignore_errors: true
+
+- name: Fail if Docker is not running
+  fail:
+    msg: "Docker is not running."
+  when: docker_service_result is failed
+
+- name: Add user to Docker group
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    groups: docker
+    append: true
+    create_home: false
+    shell: /bin/bash

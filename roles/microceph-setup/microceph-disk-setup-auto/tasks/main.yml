@@ -1,0 +1,123 @@
+# Ce role ajoute des disques en OSD a un cluster microceph
+# a privilégier si les disques a ajouter n'ont pas tous la même lettre
+# par exemple /dev/sda sur un noeud et /dev/sdb sur un autre noeud
+---
+- name: Check if MicroCeph database is initialized
+  command: "microceph status"
+  register: microceph_status
+  failed_when: microceph_status.rc != 0
+  changed_when: false
+
+- name: Fail if database is not initialized
+  fail:
+    msg: "MicroCeph database is not initialized yet. Initialize the cluster first."
+  when: "'Database is not yet initialized' in microceph_status.stderr"
+
+- name: Get current disk list from MicroCeph
+  command: "microceph disk list"
+  register: microceph_disk_list
+  changed_when: false
+  failed_when: false
+
+- name: Get detailed disk information
+  command: lsblk -bJo NAME,PATH,TYPE,SIZE,MOUNTPOINT,PKNAME,MODEL
+  register: disk_details
+  changed_when: false
+
+- name: Parse disk information as JSON
+  set_fact:
+    disk_info: "{{ disk_details.stdout | from_json }}"
+
+# Extract physical disks and find OS disk
+- name: Get list of all physical disks
+  set_fact:
+    all_physical_disks: "{{ disk_info.blockdevices | selectattr('type', 'equalto', 'disk') | map(attribute='path') | list }}"
+
+- name: Find OS disk by checking mounted partitions
+  set_fact:
+    os_disks: "{{ [] }}"
+
+- name: Check all blockdevices for OS partitions
+  set_fact:
+    os_disks: "{{ os_disks + ['/dev/' + item.pkname] }}"
+  loop: "{{ disk_info.blockdevices | selectattr('children', 'defined') |
+            map(attribute='children') | flatten | selectattr('mountpoint', 'defined') |
+            selectattr('mountpoint', 'match', '^/$|^/boot$|^/boot/efi$') | list }}"
+  when: item.pkname is defined
+
+- name: Remove duplicates from OS disks list
+  set_fact:
+    os_disks: "{{ os_disks | unique }}"
+
+# Find suitable disks for MicroCeph
+- name: Filter suitable disks for MicroCeph
+  set_fact:
+    suitable_disks: "{{ [] }}"
+
+- name: Check each disk for suitability
+  set_fact:
+    suitable_disks: "{{ suitable_disks + [item.path] }}"
+  loop: "{{ disk_info.blockdevices | selectattr('type', 'equalto', 'disk') }}"
+  when:
+    - item.path not in os_disks
+    - item.size | int > 5368709120  # 5GB in bytes
+    - not item.children is defined or
+      item.children | selectattr('mountpoint', 'defined') |
+      reject('equalto', '') | reject('equalto', null) |
+      reject('equalto', '[SWAP]') | list | length == 0
+
+- name: Fail if no suitable disks found
+  fail:
+    msg: "No suitable disks found for MicroCeph. Need at least one non-OS disk larger than 5GB that doesn't contain mounted partitions."
+  when: suitable_disks | length == 0
+
+# Extract paths of currently added disks
+- name: Extract already added disks
+  set_fact:
+    already_added_disks: "{{ microceph_disk_list.stdout | regex_findall('\\| ([^\\s]+)\\s+\\|') | list }}"
+  when: microceph_disk_list.rc == 0
+
+- name: Set empty list if no disks added yet
+  set_fact:
+    already_added_disks: []
+  when: microceph_disk_list.rc != 0 or already_added_disks is not defined
+
+- name: Calculate disks that need to be added
+  set_fact:
+    disks_to_add: "{{ suitable_disks | difference(already_added_disks) | list }}"
+
+# Add new disks if needed
+- name: Add new disks to MicroCeph
+  when: disks_to_add | length > 0
+  block:
+    - name: Add disk to MicroCeph with wipe option
+      command: "microceph disk add {{ item }} --wipe"
+      loop: "{{ disks_to_add }}"
+      register: disk_add_result
+      changed_when: disk_add_result.rc == 0
+      failed_when: false
+      retries: 5
+      delay: 30
+      until: disk_add_result is succeeded
+    # - name: Wait for OSD initialization (10 seconds)
+    #   pause:
+    #     seconds: 10
+    #   when: disk_add_result.changed
+
+    - name: Report disks with addition failures
+      debug:
+        msg: "Failed to add disk {{ item.item }}. Error: {{ item.stderr }}"
+      loop: "{{ disk_add_result.results }}"
+      when: item.rc != 0
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Fail if Disk addition was unsuccessful
+      fail:
+        msg: "Disks failed to install on all nodes."
+      when: disk_add_result is failed
+
+- name: List MicroCeph disks
+  command: microceph disk list
+  register: disk_list
+  changed_when: false

@@ -1,0 +1,47 @@
+# Ce role configure la liaison ssh et l'utilisateur ansible qui va être utilisé pour éxecuter des playbooks ansible
+---
+- name: Create a new regular user with sudo privileges
+  user:
+    name: "{{ admin_user }}"
+    state: present
+    groups: sudo
+    append: true
+    create_home: true
+    shell: /bin/bash
+
+- name: Ensure SSH key directory exists
+  file:
+    path: "/home/{{ admin_user }}/.ssh"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: '0700'
+
+- name: Add public key from control node (WSL) to ansible user
+  ansible.posix.authorized_key:
+    user: "{{ admin_user }}"
+    state: present
+    key: "{{ lookup('file', public_key_path) }}"
+    path: "/home/{{ admin_user }}/.ssh/authorized_keys"
+
+- name: Setup passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+  notify: Restart ssh
+
+- name: Disable password authentication for root
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin prohibit-password'
+    backup: true
+
+# - name: Restart SSH to apply changes
+#   service:
+#     name: ssh
+#     state: restarted
