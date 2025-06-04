@@ -1,7 +1,0 @@
----
-- name: Configure NTP servers
-  hosts: [swarm]
-  become: true
-
-  roles:
-    - ntp-setup-sync

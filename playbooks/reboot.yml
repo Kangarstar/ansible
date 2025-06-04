@@ -1,6 +1,0 @@
----
-- name: Reboot
-  hosts: [swarm]
-  become: true
-  roles:
-    - reboot
