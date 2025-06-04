@@ -1,0 +1,38 @@
+# Ce role applique une couche de sécurité sur la configuration SSH des noeuds
+---
+- name: Ensure SSH service is enabled and running
+  service:
+    name: ssh
+    state: started
+    enabled: true
+
+- name: Configure SSH security settings
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    # force l'utilisation de SSHv2
+    - { regexp: '^#?Protocol', line: 'Protocol 2' }
+    # désactive le login en root via SSH
+    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+    # désactive l'authentification par mot de passe
+    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+    # active l'affichage du log de dernière connexion
+    - { regexp: '^#?PrintLastLog', line: 'PrintLastLog yes' }
+    # spécifier ici les utilisateurs autorisés
+    - { regexp: '^#?AllowUsers', line: 'AllowUsers ansible a_sacks' }
+    # désactive le login via mot de passe vide
+    - { regexp: '^#?PermitEmptyPasswords', line: 'PermitEmptyPasswords no' }
+    # Met en place une limite de temps pour se connecter
+    - { regexp: '^#?LoginGraceTime', line: 'LoginGraceTime 30' }
+    # Désactive l'authentification ssh via d'autre serveurs
+    - { regexp: '^#?AllowAgentForwarding', line: 'AllowAgentForwarding no' }
+    # Désactive l'authentification par challenge (Questions)
+    - { regexp: '^#?ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no' }
+    # Désactive la connexion en interface graphique
+    - { regexp: '^#?X11Forwarding', line: 'X11Forwarding no' }
+    # Désactive la redirection de ports
+    - { regexp: '^#?AllowTcpForwarding', line: 'AllowTcpForwarding no' }
+  notify: Restart ssh

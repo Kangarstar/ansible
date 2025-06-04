@@ -1,0 +1,33 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install apt packages
+  ansible.builtin.apt:
+    name:
+      - snapd
+      - iftop
+      - htop
+      - btop
+      - git
+      - gnupg
+      - lsb-release
+      - sl
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - python3-pip
+      - python3-jsondiff
+      - python3-yaml
+      # - ceph-common
+    state: present
+  register: apt_result
+  retries: 5
+  delay: 30
+  until: apt_result is succeeded
+
+- name: Fail if MicroCeph installation was unsuccessful
+  fail:
+    msg: "MicroCeph failed to install after multiple retries."
+  when: apt_result is failed

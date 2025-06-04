@@ -1,0 +1,4 @@
+# Ce fichier configure le degré d'erreurs de code et de syntaxe remontées par ansible lint
+skip_list:
+  - fqcn-builtins
+  - fqcn

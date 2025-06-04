@@ -1,0 +1,241 @@
+# This task is supposed to add nodes to the cluster if they are not in yet
+# The task is incomplete
+- name: Check if MicroCeph is already bootstrapped on primary node
+  command: microceph status
+  register: microceph_status_primary
+  changed_when: false
+  failed_when: false
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+- name: Set flag if MicroCeph is already bootstrapped on primary
+  set_fact:
+    microceph_already_bootstrapped: "{{ 'MicroCeph deployment summary' in microceph_status_primary.stdout }}"
+  run_once: true
+
+# Bootstrap only if not already bootstrapped
+- name: Bootstrap MicroCeph on primary node
+  command: microceph cluster bootstrap
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+  register: bootstrap_result
+  failed_when:
+    - bootstrap_result.rc != 0
+    - "'Database is online' not in bootstrap_result.stderr"
+  changed_when: "'Database is online' not in bootstrap_result.stderr"
+  when: not microceph_already_bootstrapped
+
+# Add a wait for the bootstrap to stabilize
+- name: Wait for MicroCeph cluster to stabilize after bootstrap
+  pause:
+    seconds: 15
+  when: not microceph_already_bootstrapped
+  run_once: true
+
+# Check status on each secondary node individually
+- name: Check MicroCeph status on secondary nodes
+  command: microceph status
+  register: node_microceph_status
+  changed_when: false
+  failed_when: false
+  when: inventory_hostname != groups['swarm'][0]
+
+# Get cluster member list from primary node
+- name: Get cluster member list
+  command: microceph cluster list
+  register: cluster_list
+  changed_when: false
+  failed_when: false
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+# Clean up any token records for nodes we want to add
+- name: Clean up any existing token records
+  shell: |
+    for i in $(microceph sql "SELECT id FROM core_token_records WHERE name = '{{ hostvars[item]['ansible_hostname'] }}'"); do
+      microceph sql "DELETE FROM core_token_records WHERE id = $i"
+    done
+  loop: "{{ groups['swarm'][1:] }}"
+  register: cleanup_tokens
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+  changed_when: false
+  failed_when: false
+  when: hostvars[item]['ansible_hostname'] not in cluster_list.stdout
+
+# Try to remove problematic nodes that appear in the list but aren't working properly
+- name: Remove problematic nodes from cluster if needed
+  command: microceph cluster remove {{ hostvars[item]['ansible_hostname'] }} --force
+  loop: "{{ groups['swarm'][1:] }}"
+  register: removed_nodes
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+  changed_when: removed_nodes.rc == 0
+  failed_when: false
+  when: >
+    hostvars[item]['ansible_hostname'] in cluster_list.stdout and
+    hostvars[item]['node_microceph_status'] is defined and (
+      hostvars[item]['node_microceph_status'].rc != 0 or
+      'not a cluster member' in hostvars[item]['node_microceph_status'].stderr or
+      'not part of a cluster' in hostvars[item]['node_microceph_status'].stderr or
+      'failed to get remote status' in hostvars[item]['node_microceph_status'].stderr
+    )
+
+# Wait after removing nodes
+- name: Wait after removing nodes
+  pause:
+    seconds: 10
+  when: removed_nodes.changed | default(false)
+  run_once: true
+
+# Reset disconnected nodes if needed
+- name: Reset MicroCeph on disconnected secondary nodes
+  command: microceph cluster unjoin --force
+  register: reset_result
+  failed_when: false
+  changed_when: reset_result.rc == 0
+  when:
+    - inventory_hostname != groups['swarm'][0]
+    - node_microceph_status.rc != 0 or
+      'not a cluster member' in node_microceph_status.stderr or
+      'not part of a cluster' in node_microceph_status.stderr or
+      'failed to get remote status' in node_microceph_status.stderr
+
+# Wait after reset
+- name: Wait after resetting nodes
+  pause:
+    seconds: 5
+  when: reset_result.changed | default(false)
+
+# Initialize node_tokens fact
+- name: Initialize node_tokens fact
+  set_fact:
+    node_tokens: {}
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+# Get updated cluster member list
+- name: Get updated cluster member list
+  command: microceph cluster list
+  register: updated_cluster_list
+  changed_when: false
+  failed_when: false
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+# Generate tokens for nodes that need to join
+- name: Generate join tokens for secondary nodes that need it
+  command: microceph cluster add {{ hostvars[item]['ansible_hostname'] }}
+  loop: "{{ groups['swarm'][1:] }}"
+  register: tokens
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+  changed_when: true
+  failed_when:
+    - item.rc != 0
+    - "'UNIQUE constraint failed' not in item.stderr"  # Don't fail on unique constraint
+  when: hostvars[item]['ansible_hostname'] not in updated_cluster_list.stdout
+
+# Retry adding nodes with UNIQUE constraint errors
+- name: Retry token generation with add-token
+  command: microceph cluster add-token {{ hostvars[item.item]['ansible_hostname'] }}
+  loop: "{{ tokens.results }}"
+  register: retry_tokens
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+  when:
+    - item.skipped is not defined
+    - item.rc != 0
+    - "'UNIQUE constraint failed' in item.stderr"
+
+# Store tokens from initial add
+- name: Store successful tokens from initial add
+  set_fact:
+    node_tokens: "{{ node_tokens | combine({hostvars[item.item]['ansible_hostname']: item.stdout}) }}"
+  loop: "{{ tokens.results }}"
+  when:
+    - item.skipped is not defined
+    - item.rc == 0
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+# Store tokens from retry
+- name: Store successful tokens from retry
+  set_fact:
+    node_tokens: "{{ node_tokens | combine({hostvars[item.item.item]['ansible_hostname']: item.stdout}) }}"
+  loop: "{{ retry_tokens.results | default([]) }}"
+  when:
+    - item.skipped is not defined
+    - item.rc == 0
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+# If we still don't have tokens, try a different approach
+- name: Last resort token generation
+  shell: |
+    microceph cluster remove {{ hostvars[item]['ansible_hostname'] }} --force || true
+    sleep 2
+    microceph cluster add {{ hostvars[item]['ansible_hostname'] }}
+  loop: "{{ groups['swarm'][1:] }}"
+  register: last_resort_tokens
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+  when:
+    - hostvars[item]['ansible_hostname'] not in updated_cluster_list.stdout
+    - hostvars[item]['ansible_hostname'] not in (node_tokens.keys() | list)
+  failed_when: false
+
+# Store last resort tokens
+- name: Store last resort tokens
+  set_fact:
+    node_tokens: "{{ node_tokens | combine({hostvars[item.item]['ansible_hostname']: item.stdout}) }}"
+  loop: "{{ last_resort_tokens.results | default([]) }}"
+  when:
+    - item.skipped is not defined
+    - item.rc == 0
+    - item.stdout | length > 0
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+- name: Wait for tokens to be distributed
+  pause:
+    seconds: 5
+  run_once: true
+
+- name: Debug node tokens
+  debug:
+    var: node_tokens
+  run_once: true
+  delegate_to: "{{ groups['swarm'][0] }}"
+
+- name: Join MicroCeph cluster on secondary nodes
+  command: "microceph cluster join {{ hostvars[groups['swarm'][0]]['node_tokens'][ansible_hostname] }}"
+  register: join_result
+  retries: 3
+  delay: 10
+  until: join_result.rc == 0 or 'already joined' in join_result.stderr or 'Remote with address' in join_result.stderr
+  when:
+    - inventory_hostname != groups['swarm'][0]
+    - hostvars[groups['swarm'][0]]['node_tokens'] is defined
+    - hostvars[groups['swarm'][0]]['node_tokens'][ansible_hostname] is defined
+  failed_when:
+    - join_result.rc != 0
+    - "'already joined' not in join_result.stderr"
+    - "'Remote with address' not in join_result.stderr"
+  changed_when:
+    - join_result.rc == 0
+    - "'already joined' not in join_result.stderr"
+    - "'Remote with address' not in join_result.stderr"
+
+# Verify cluster is complete with all nodes
+- name: Check final MicroCeph status
+  command: microceph status
+  register: final_status
+  changed_when: false
+  delegate_to: "{{ groups['swarm'][0] }}"
+  run_once: true
+
+- name: Display final cluster status
+  debug:
+    var: final_status.stdout_lines
+  run_once: true
