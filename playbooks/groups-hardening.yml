@@ -1,0 +1,65 @@
+# Ce playbook créée un groupe admin avec droits limités comparé au groupe sudo
+# Le groupe admin est celui qui va être affecté aux administrateurs de la machine
+# Certains privilèges puissant comme la gestion des droits et des utilisateurs y sont restreints
+# De plus, le changement d'utilisateur est bloqué
+---
+- name: Configure admin group with limited sudo rights
+  hosts: swarm
+  become: yes
+  vars:
+    admin_group: admin
+    blacklist_commands:
+      - /usr/sbin/usermod
+      - /usr/sbin/useradd
+      - /usr/bin/gpasswd
+  tasks:
+    - name: Create admin group
+      group:
+        name: "{{ admin_group }}"
+        state: present
+      
+    - name: Create sudoers.d configuration for admin group
+      copy:
+        content: |
+          # Admin group with restricted sudo access
+          Cmnd_Alias BLACKLIST = {{ blacklist_commands | join(', ') }}
+          %{{ admin_group }}  ALL=(root:root) ALL, !BLACKLIST
+        dest: /etc/sudoers.d/{{ admin_group }}
+        mode: '0440'
+        owner: root
+        group: root
+        validate: 'visudo -cf %s'
+        backup: yes
+      
+    - name: Backup original PAM su configuration
+      copy:
+        src: /etc/pam.d/su
+        dest: /etc/pam.d/su.backup
+        remote_src: yes
+        backup: yes
+      
+    - name: Configure PAM to restrict su command to sudo group members
+      lineinfile:
+        path: /etc/pam.d/su
+        line: "auth required pam_wheel.so group=sudo use_uid"
+        insertafter: "^# auth.*required.*pam_wheel.so"
+        backup: yes
+      
+    - name: Verify sudoers file syntax
+      command: visudo -c
+      register: sudoers_check
+      changed_when: false
+      
+    - name: Display sudoers validation result
+      debug:
+        msg: "Sudoers file validation: {{ sudoers_check.stdout }}"
+        
+    - name: Verify admin group exists
+      getent:
+        database: group
+        key: "{{ admin_group }}"
+      register: admin_group_check
+      
+    - name: Display admin group information
+      debug:
+        msg: "Admin group created successfully: {{ admin_group_check.ansible_facts.getent_group[admin_group] }}"

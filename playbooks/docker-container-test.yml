@@ -4,7 +4,6 @@
   hosts: [test]
   # become: true
 
-
   tasks:
     - name: Run the helloworld Docker container
       community.docker.docker_container:

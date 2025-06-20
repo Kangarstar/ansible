@@ -1,0 +1,22 @@
+---
+- name: Collect Docker ps and stats from hosts
+  hosts: swarm
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Run 'docker ps'
+      ansible.builtin.command: docker ps
+      register: docker_ps_output
+
+    - name: Run 'docker stats --no-stream'
+      ansible.builtin.command: docker stats --no-stream
+      register: docker_stats_output
+
+    - name: Display Docker PS Output
+      ansible.builtin.debug:
+        var: docker_ps_output.stdout_lines
+
+    - name: Display Docker Stats Output
+      ansible.builtin.debug:
+        var: docker_stats_output.stdout_lines/usr/bin/gpasswd
+        AeSrce2has0vyXRj4WIt

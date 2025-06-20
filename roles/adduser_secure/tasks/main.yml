@@ -1,0 +1,17 @@
+---
+- name: Add user 
+  become: true
+  block:
+    - name: Ensure the group exists
+      group:
+        name: "{{ new_group }}"
+        state: present
+
+    - name: Create the user with the specified password and add to group
+      user:
+        name: "{{ new_username }}"
+        shell: /bin/bash
+        create_home: true
+        password: "{{ new_password }}"
+        groups: "{{ new_group }}"
+        append: yes

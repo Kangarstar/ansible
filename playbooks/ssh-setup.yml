@@ -4,8 +4,6 @@
   become: true
   become_user: root
   vars:
-    # admin_user: "ansible"
-    windows_user: "a.sacks"
     public_key_path: "/mnt/c/Users/{{ windows_user }}/.ssh/id_ed25519.pub"
 
   roles:

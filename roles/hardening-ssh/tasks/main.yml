@@ -12,6 +12,7 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
+    backrefs: yes
   with_items:
     # force l'utilisation de SSHv2
     - { regexp: '^#?Protocol', line: 'Protocol 2' }
@@ -21,8 +22,8 @@
     - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
     # active l'affichage du log de dernière connexion
     - { regexp: '^#?PrintLastLog', line: 'PrintLastLog yes' }
-    # spécifier ici les utilisateurs autorisés
-    - { regexp: '^#?AllowUsers', line: 'AllowUsers ansible a_sacks' }
+    # # spécifier ici les utilisateurs autorisés
+    # - { regexp: '^#?AllowUsers', line: 'AllowUsers ansible a_sacks' }
     # désactive le login via mot de passe vide
     - { regexp: '^#?PermitEmptyPasswords', line: 'PermitEmptyPasswords no' }
     # Met en place une limite de temps pour se connecter
@@ -35,4 +36,29 @@
     - { regexp: '^#?X11Forwarding', line: 'X11Forwarding no' }
     # Désactive la redirection de ports
     - { regexp: '^#?AllowTcpForwarding', line: 'AllowTcpForwarding no' }
+    # Active l'authentification par clé publique uniquement
+    - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+    # Désactive Kerberos authentication
+    - { regexp: '^#?KerberosAuthentication', line: 'KerberosAuthentication no' }
+    # Désactive Hostbased authentication
+    - { regexp: '^#?HostbasedAuthentication', line: 'HostbasedAuthentication no' }
+    # Désactive GSSAPI authentication
+    - { regexp: '^#?GSSAPIAuthentication', line: 'GSSAPIAuthentication no' }
+    # Désactive GSSAPI Key Exchange
+    - { regexp: '^#?GSSAPIKeyExchange', line: 'GSSAPIKeyExchange no' }
+    # Limite la durée et le volume des sessions avant rekey
+    - { regexp: '^#?RekeyLimit', line: 'RekeyLimit 512M 6h' }
+    # Désactive les autres fonctionnalités pouvant poser problème
+    - { regexp: '^#?AllowStreamLocalForwarding', line: 'AllowStreamLocalForwarding no' }
+    - { regexp: '^#?PermitTunnel', line: 'PermitTunnel no' }
+    - { regexp: '^#?PermitUserRC', line: 'PermitUserRC no' }
+    - { regexp: '^#?GatewayPorts', line: 'GatewayPorts no' }
+    # Active la vérification stricte des modes de fichiers
+    - { regexp: '^#?StrictModes', line: 'StrictModes yes' }
   notify: Restart ssh
+
+- name: Ensure SSH service is restarted if configuration changed
+  service:
+    name: ssh
+    state: restarted
+  when: sshd_config_changed is defined and sshd_config_changed
