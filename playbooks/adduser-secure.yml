@@ -1,0 +1,43 @@
+# Ce playbook créé et ajoute un utilisateur a un groupe
+---
+- name: Add a user
+  hosts: all
+  become: true
+  vars:
+    # sélectionner un utilisateur sous le format première lettre du prénom puis nom de famille.
+    # ex: pour Jean LODE : j.lode
+    new_username: a.sacks
+    new_password: "{{ 'strongpassword' | password_hash('sha512') }}"
+    new_group: admin
+    ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII+MM7qN4VH9M4az3y9bKvIIvgtOPSWWGbqD8vZsbVyz a.sacks_t1@srv-1"
+
+  tasks:
+    - name: Ensure the group exists
+      group:
+        name: "{{ new_group }}"
+        state: present
+
+    - name: Create the user with the specified password and add to group
+      user:
+        name: "{{ new_username }}"
+        shell: /bin/bash
+        create_home: true
+        password: "{{ new_password }}"
+        groups: "{{ new_group }}"
+        append: yes
+
+    - name: Ensure SSH key directory exists
+      file:
+        path: "/home/{{ new_username }}/.ssh"
+        state: directory
+        owner: "{{ new_username }}"
+        group: "{{ new_username }}"
+        mode: '0700'
+
+    - name: Add authorized public key
+      copy:
+        content: "{{ ssh_pubkey }}"
+        dest: "/home/{{ new_username }}/.ssh/authorized_keys"
+        owner: "{{ new_username }}"
+        group: "{{ new_username }}"
+        mode: '0600'
