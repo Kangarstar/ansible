@@ -21,21 +21,21 @@
   register: stack_list
   changed_when: false
 
-# Supprimer la stack si elle existe
-- name: Remove existing Portainer stack
-  community.docker.docker_stack:
-    name: elk
-    state: absent
-  when: "'portainer' in stack_list.stdout_lines"
-  run_once: true
-  register: stack_removed
+# # Supprimer la stack si elle existe
+# - name: Remove existing Portainer stack
+#   community.docker.docker_stack:
+#     name: elk
+#     state: absent
+#   when: "'portainer' in stack_list.stdout_lines"
+#   run_once: true
+#   register: stack_removed
 
-# Attendre que la stack soit complètement supprimée
-- name: Wait for stack removal
-  ansible.builtin.pause:
-    seconds: 5
-  when: stack_removed.changed
-  run_once: true
+# # Attendre que la stack soit complètement supprimée
+# - name: Wait for stack removal
+#   ansible.builtin.pause:
+#     seconds: 5
+#   when: stack_removed.changed
+#   run_once: true
 
 # Vérifier si le réseau existe déjà
 - name: Check if network exists
