@@ -1,0 +1,14 @@
+# Ce playbook déploie elk en Haute disponibilité sur un cluster
+# Il déploie un agent elasticsearch, metricbeat et filebeat sur chaque noeud de la swarm ainsi que l'interface kibana sur un seul noeud de la swarm
+# Ce role est a lancer seulement après avoir installé docker et docker compose, initialisé la swarm et configuré du stockage
+- name: Deploy Portainer and Agent services
+  hosts: [swarm]
+  become: true
+  vars:
+    network_name: elk
+    # share_name: portainer
+    repo_url: "git@github.com:NTE-Airport-DSI/docker-elk.git"
+    repo_dest: "/opt/"
+    script_path: "./swarm-setup.sh"
+  roles:
+    - docker-stack-elk

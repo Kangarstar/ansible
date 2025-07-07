@@ -18,5 +18,4 @@
 
     - name: Display Docker Stats Output
       ansible.builtin.debug:
-        var: docker_stats_output.stdout_lines/usr/bin/gpasswd
-        AeSrce2has0vyXRj4WIt
+        var: docker_stats_output.stdout_lines

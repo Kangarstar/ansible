@@ -6,10 +6,11 @@
   vars:
     # sélectionner un utilisateur sous le format première lettre du prénom puis nom de famille.
     # ex: pour Jean LODE : j.lode
+    # insérer un mdp et une clef publique ssh
     new_username: a.sacks
     new_password: "{{ 'strongpassword' | password_hash('sha512') }}"
     new_group: admin
-    ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII+MM7qN4VH9M4az3y9bKvIIvgtOPSWWGbqD8vZsbVyz a.sacks_t1@srv-1"
+    ssh_pubkey: ""
 
   tasks:
     - name: Ensure the group exists

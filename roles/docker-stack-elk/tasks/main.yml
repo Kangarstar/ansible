@@ -1,0 +1,74 @@
+# Ce playbook déploie elk en Haute disponibilité sur un cluster
+# Il déploie un agent elasticsearch, metricbeat et filebeat sur chaque noeud de la swarm ainsi que l'interface kibana sur un seul noeud de la swarm
+# Ce role est a lancer seulement après avoir installé docker et docker compose, initialisé la swarm et configuré du stockage
+
+
+- name: Ensure git is installed
+  apt:
+    name: git
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Clone or update the Git repository
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ repo_dest }}"
+  version: main
+  force: yes
+
+- name: Check if 'portainer' stack exists
+  ansible.builtin.command: docker stack ls --format '{{ "{{.Name}}" }}'
+  register: stack_list
+  changed_when: false
+
+# Supprimer la stack si elle existe
+- name: Remove existing Portainer stack
+  community.docker.docker_stack:
+    name: elk
+    state: absent
+  when: "'portainer' in stack_list.stdout_lines"
+  run_once: true
+  register: stack_removed
+
+# Attendre que la stack soit complètement supprimée
+- name: Wait for stack removal
+  ansible.builtin.pause:
+    seconds: 5
+  when: stack_removed.changed
+  run_once: true
+
+# Vérifier si le réseau existe déjà
+- name: Check if network exists
+  ansible.builtin.command: docker network ls --filter "name={{ network_name }}" --format '{{ "{{.Name}}" }}'
+  register: network_list
+  changed_when: false
+  run_once: true
+
+# Créer le réseau s'il n'existe pas
+- name: Create Docker network
+  community.docker.docker_network:
+    name: "{{ network_name }}"
+    driver: overlay
+    attachable: true
+  when: "network_name not in network_list.stdout_lines"
+  run_once: true
+
+# Déployer le stack
+- name: Make script executable
+  file:
+    path: "{{ repo_dest }}/{{ script_path }}"
+    mode: '0755'
+
+- name: Deploy Elastic Stack 
+  command: "{{ repo_dest }}/{{ script_path }}"
+
+
+# Vérifier le statut du déploiement
+- name: Check if stack exists after deployment
+  ansible.builtin.command: docker stack ls --format '{{ "{{.Name}}" }}'
+  register: stack_list_after
+  changed_when: false
+
+- name: Report stack deployment status
+  ansible.builtin.debug:
+    msg: "{{ '✅ Stack deployed successfully.' if 'portainer' in stack_list_after.stdout_lines else '❌ Stack deployment failed.' }}"

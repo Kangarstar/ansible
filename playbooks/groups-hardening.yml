@@ -2,10 +2,11 @@
 # Le groupe admin est celui qui va être affecté aux administrateurs de la machine
 # Certains privilèges puissant comme la gestion des droits et des utilisateurs y sont restreints
 # De plus, le changement d'utilisateur est bloqué
+
 ---
 - name: Configure admin group with limited sudo rights
   hosts: swarm
-  become: yes
+  become: true
   vars:
     admin_group: admin
     blacklist_commands:
@@ -17,7 +18,7 @@
       group:
         name: "{{ admin_group }}"
         state: present
-      
+
     - name: Create sudoers.d configuration for admin group
       copy:
         content: |
@@ -29,37 +30,94 @@
         owner: root
         group: root
         validate: 'visudo -cf %s'
-        backup: yes
-      
+        backup: true
+
     - name: Backup original PAM su configuration
       copy:
         src: /etc/pam.d/su
         dest: /etc/pam.d/su.backup
-        remote_src: yes
-        backup: yes
-      
+        remote_src: true
+        backup: true
+
     - name: Configure PAM to restrict su command to sudo group members
       lineinfile:
         path: /etc/pam.d/su
         line: "auth required pam_wheel.so group=sudo use_uid"
         insertafter: "^# auth.*required.*pam_wheel.so"
-        backup: yes
-      
+        backup: true
+
+    - name: Check if docker group exists
+      getent:
+        database: group
+        key: docker
+      register: docker_group_check
+      failed_when: false
+
+    - name: Get docker group members
+      getent:
+        database: group
+        key: docker
+      register: docker_members
+      when: docker_group_check.ansible_facts.getent_group.docker is defined
+      failed_when: false
+
+    - name: Remove all users from docker group
+      command: gpasswd -d {{ item }} docker
+      loop: "{{ docker_members.ansible_facts.getent_group.docker[2].split(',') | select('match', '.+') | list }}"
+      when:
+        - docker_group_check.ansible_facts.getent_group.docker is defined
+        - docker_members.ansible_facts.getent_group.docker[2] | length > 0
+      register: gpasswd_result
+      failed_when:
+        - gpasswd_result.rc != 0
+        - "'is not a member of' not in gpasswd_result.stderr"
+      notify: log_docker_user_removal
+
+    - name: Ensure docker group is empty (verification)
+      getent:
+        database: group
+        key: docker
+      register: docker_members_verify
+      when: docker_group_check.ansible_facts.getent_group.docker is defined
+      failed_when:
+        - docker_members_verify.ansible_facts.getent_group.docker is defined
+        - docker_members_verify.ansible_facts.getent_group.docker[2] | length > 0
+
+    - name: Remove docker group entirely (optional - uncomment if desired)
+      group:
+        name: docker
+        state: absent
+      when: docker_group_check.ansible_facts.getent_group.docker is defined
+      # Uncomment the line above to completely remove the docker group
+
     - name: Verify sudoers file syntax
       command: visudo -c
       register: sudoers_check
       changed_when: false
-      
+
     - name: Display sudoers validation result
       debug:
         msg: "Sudoers file validation: {{ sudoers_check.stdout }}"
-        
+
     - name: Verify admin group exists
       getent:
         database: group
         key: "{{ admin_group }}"
       register: admin_group_check
-      
+
     - name: Display admin group information
       debug:
         msg: "Admin group created successfully: {{ admin_group_check.ansible_facts.getent_group[admin_group] }}"
+
+    - name: Display docker group security status
+      debug:
+        msg: |
+          Docker group security check:
+          - Docker group exists: {{ docker_group_check.ansible_facts.getent_group.docker is defined }}
+          - Docker group members removed: {{ docker_members.ansible_facts.getent_group.docker[2] if docker_members.ansible_facts.getent_group.docker is defined else 'N/A' }}
+          - Current docker group status: {{ docker_members_verify.ansible_facts.getent_group.docker[2] if docker_members_verify.ansible_facts.getent_group.docker is defined else 'Group not found' }}
+
+  handlers:
+    - name: log_docker_user_removal
+      debug:
+        msg: "Security Alert: Removed users from docker group for security compliance"
