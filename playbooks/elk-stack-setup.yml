@@ -8,7 +8,7 @@
     network_name: elk
     # share_name: 
     repo_url: "ssh://git@ssh.github.com:443/NTE-Airport-DSI/docker-elk.git"
-    repo_dest: "/opt/"
+    repo_dest: "/opt/docker-elk"
     script_path: "/opt/docker-elk/swarm-setup.sh"
   roles:
     - elk-stack-setup
