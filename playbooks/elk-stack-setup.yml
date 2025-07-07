@@ -5,7 +5,6 @@
   hosts: [srv-elk-swarm-01]
   become: true
   vars:
-    admin_user: 
     network_name: elk
     # share_name: 
     repo_url: "ssh://git@ssh.github.com:443/NTE-Airport-DSI/docker-elk.git"
