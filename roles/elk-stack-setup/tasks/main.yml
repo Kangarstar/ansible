@@ -9,6 +9,13 @@
     state: present
   when: ansible_os_family == "Debian"
 
+- name: Ensure GitHub SSH host key is known
+  known_hosts:
+    path: /home/{{ ansible_user }}/.ssh/known_hosts
+    name: ssh.github.com
+    key: "{{ lookup('pipe', 'ssh-keyscan -p 443 ssh.github.com') }}"
+    state: present
+
 - name: Clone or update the Git repository
   git:
     repo: "{{ repo_url }}"
@@ -16,7 +23,7 @@
     version: main
     force: yes
 
-- name: Check if 'portainer' stack exists
+- name: Check if 'elk' stack exists
   ansible.builtin.command: docker stack ls --format '{{ "{{.Name}}" }}'
   register: stack_list
   changed_when: false
