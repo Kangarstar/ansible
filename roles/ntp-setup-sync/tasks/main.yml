@@ -9,9 +9,14 @@
     mode: '0644'
   notify: Restart systemd-timesyncd
 
-- name: Restart NTP configuration
+
+- name: Restart NTP configuration and set timezone
   become: true
   block:
+    - name: Set time zone to Europe/Paris
+      ansible.builtin.command: timedatectl set-timezone Europe/Paris
+      changed_when: true
+
     - name: Disable NTP temporarily
       ansible.builtin.command: timedatectl set-ntp false
       changed_when: false
@@ -19,4 +24,4 @@
     - name: Re-enable NTP
       ansible.builtin.command: timedatectl set-ntp true
       changed_when: false
-      notify: Restart systemd-timesync
+      notify: Restart systemd-timesyncd
