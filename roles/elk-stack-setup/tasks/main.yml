@@ -23,7 +23,7 @@
     dest: "{{ repo_dest }}"
     version: main
     force: yes
-    key_file: "/home/{{ admin_user }}/.ssh/id_ed25519"
+    key_file: "/home/{{ admin_user }}/.ssh/deploy_key"
   become_user: "{{ admin_user }}"
   become: yes
   environment:
