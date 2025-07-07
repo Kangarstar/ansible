@@ -72,8 +72,12 @@
     path: "{{ repo_dest }}/{{ script_path }}"
     mode: '0755'
 
-- name: Deploy Elastic Stack 
-  command: "{{ repo_dest }}/{{ script_path }}"
+
+- name: Deploy Elastic Stack
+  command: "./{{ script_path }}"
+  args:
+    chdir: "{{ repo_dest }}"
+
 
 
 # Vérifier le statut du déploiement
