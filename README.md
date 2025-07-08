@@ -11,7 +11,8 @@ Ce repository contient le code Ansible nécessaire pour déployer et administrer
 
 ### Configuration système
 
-- **sync-ntp-service.yml** : Configure les serveurs NTP de l’aéroport puis rafraîchit l’heure.
+- **ntp-setup-sync.yml** : Configure les serveurs NTP de l’aéroport ainsi que le fuseau horaire. Rafraîchit ensuite l’heure.
+
 - **adduser-secure.yml**  
   Ce playbook créé et ajoute un utilisateur a un groupe, ici le groupe admin avec moindre privilège
   Le nouvel utilisateur pourra se connecter uniquement en ssh
@@ -75,7 +76,7 @@ Ce repository contient le code Ansible nécessaire pour déployer et administrer
 - **portainer-ha-full.yml** :  
   Ce playbook inclut les rôles suivants :
   - `Ssh-setup.yml`
-  - `Sync-ntp-service.yml`
+  - `Ntp-setup-sync.yml`
   - `Docker-engine-setup.yml`
   - `Microceph-deploy.yml`
   - `Docker-swarm-init.yml`
