@@ -84,13 +84,13 @@ Ce repository contient le code Ansible nécessaire pour déployer et administrer
 ## Comment installer et utiliser Ansible
 
 ### Installation sur environnement GNU/Linux Debian
-*Téléchargement et Installation d'Ansible et ses dépendances*  
+*Téléchargement et Installation d'Ansible et ses dépendances:*  
 $ sudo apt update && sudo apt upgrade -y  
 $ sudo apt install git python3 ansible ansible-lint sshpass  
-*Cloner le repo*  
+*Cloner le repo:*  
 $ git clone ssh://git@ssh.github.com:443/NTE-Airport-DSI/ansible.git  
 $ cd ansible/  
-*Adapter vos IP et hosntames dans l'inventaire*
+*Adapter vos IP et hosntames dans l'inventaire:*
 $ nano inventory.ini    
-*éxecuter des playbooks!*  
+*Exécuter des playbooks!*  
 $ ansible-playbook playbooks/playbook-a-executer  
