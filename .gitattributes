@@ -1,1 +1,3 @@
+# garder l'attribut LF sur tout le repo pour utiliser le formatage UNIX
+# ceci empêche le formattage en CRLF depuis une machine windows ce qui casserait tout
 * text=auto eol=lf
