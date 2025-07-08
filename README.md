@@ -1,7 +1,8 @@
 # Ansible
 
-Ce repository contient le code Ansible nécessaire pour déployer et administrer un cluster de 3 nœuds Docker Swarm avec ELK et Portainer.
+Ce repository contient le code Ansible nécessaire pour déployer et administrer un cluster de 3 nœuds Docker Swarm avec ELK et Portainer.  
 
+Pour les modifications et ajouts de code ansible il est intéressant de noter que les fonctionnalités ansible lint de vérification de logique et de syntaxe du code ne fonctionneront que depuis un environnement Linux ou WSL. Il est possible de modifier et contribuer au code depuis un environnement windows sans les fonctionnalités ansible lint. 
 ## Liste des playbooks et leur description
 
 ### Playbooks de gestion des nœuds
