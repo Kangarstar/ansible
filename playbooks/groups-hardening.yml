@@ -1,5 +1,5 @@
 # Ce playbook créée un groupe admin avec droits limités comparé au groupe sudo
-# Le groupe admin est celui qui va être affecté aux administrateurs de la machine
+# Les droits du groupe admin sont ceux qui vont être affecté aux administrateurs de la machine
 # Certains privilèges puissant comme la gestion des droits et des utilisateurs y sont restreints
 # De plus, le changement d'utilisateur est bloqué
 
