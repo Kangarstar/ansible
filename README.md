@@ -90,7 +90,7 @@ $ sudo apt install git python3 ansible ansible-lint sshpass
 *Cloner le repo:*  
 $ git clone ssh://git@ssh.github.com:443/NTE-Airport-DSI/ansible.git  
 $ cd ansible/  
-*Adapter vos IP et hosntames dans l'inventaire:*
+*Adapter vos IP et hosntames dans l'inventaire:*  
 $ nano inventory.ini    
 *Exécuter des playbooks!*  
 $ ansible-playbook playbooks/playbook-a-executer  
