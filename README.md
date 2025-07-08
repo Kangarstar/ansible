@@ -87,6 +87,6 @@ Ce repository contient le code Ansible nécessaire pour déployer et administrer
 $ sudo apt update && sudo apt upgrade -y  
 $ sudo apt install git python3 ansible ansible-lint sshpass  
 $ git clone ssh://git@ssh.github.com:443/NTE-Airport-DSI/ansible.git  
-$ cd ansible/ 
-$ nano inventory.ini
+$ cd ansible/  
+$ nano inventory.ini  
 $ ansible-playbook playbooks/playbook-a-executer  
