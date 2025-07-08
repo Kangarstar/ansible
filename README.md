@@ -93,6 +93,12 @@ $ sudo apt install git python3 ansible ansible-lint sshpass
 $ git clone ssh://git@ssh.github.com:443/NTE-Airport-DSI/ansible.git  
 $ cd ansible/  
 *Adapter vos IP et hosntames dans l'inventaire:*  
-$ nano inventory.ini    
+$ nano inventory.ini  
+*Tester la connectivité*  
+$ ansible all -m ping  
 *Exécuter des playbooks!*  
+*Avec mot de passe*  
+$ ansible-playbook playbooks/playbook-a-executer -K  
+*Avec ssh configuré*  
 $ ansible-playbook playbooks/playbook-a-executer  
+
