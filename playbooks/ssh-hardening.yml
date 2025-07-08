@@ -1,0 +1,7 @@
+---
+- name: Setup SSH link and Ansible user
+  hosts: [swarm]
+  become: true
+  become_user: root
+  roles:
+    - role: ssh-hardening

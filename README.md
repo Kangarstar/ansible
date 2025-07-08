@@ -14,10 +14,14 @@ Pour les modifications et ajouts de code ansible il est intéressant de noter qu
 
 - **ntp-setup-sync.yml** : Configure les serveurs NTP de l’aéroport ainsi que le fuseau horaire. Rafraîchit ensuite l’heure.
 
-- **adduser-secure.yml**  
+- **adduser-ssh.yml**  
   Ce playbook créé et ajoute un utilisateur a un groupe, ici le groupe admin avec moindre privilège
   Le nouvel utilisateur pourra se connecter uniquement en ssh
-  Il est nécessaire de fournir un nouveau login, un mot de passe et une clef publique ssh
+  Il est nécessaire de fournir un nouveau login, un mot de passe et une clef publique ssh  
+- **adduser-admin-ssh**  
+  Ce playbook ajoute l'utilisateur admin ansible (admindsi) au groupe sudo si ce n'est pas déja fait, puis configure le ssh pour pouvoir utiliser ansible    
+  L'utilisateur pourra se connecter uniquement en ssh  
+  Il est nécessaire de fournir une clef publique ssh  
 
 - **groups-hardening.yml**  
   Ce playbook créée un groupe admin avec droits limités comparé au groupe sudo
@@ -43,9 +47,8 @@ Pour les modifications et ajouts de code ansible il est intéressant de noter qu
   
 
 ### Configuration SSH
-- **ssh-setup.yml** :  
-  Configure le lien SSH avec les nœuds et crée un utilisateur Ansible qui exécutera les autres playbooks.  
-  Applique également une couche de hardening SSH. 
+- **ssh-hardening.yml** :  
+  Applique une couche de hardening SSH au fichier sshd_config. 
   
 ### Docker
 
