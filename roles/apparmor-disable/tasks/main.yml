@@ -15,12 +15,9 @@
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
-    line: >-
-      {{
-        grub_cmdline.stdout
-        | regex_replace(' apparmor=0', '')
-        | regex_replace('\"$', ' apparmor=0\"')
-      }}
+    line: "{{ grub_cmdline.stdout | regex_replace('apparmor=0', '') | regex_replace('\"$', ' apparmor=0\"') }}"
+
+
     backrefs: false
   when: "'apparmor=0' not in grub_cmdline.stdout"
   register: grub_modified
