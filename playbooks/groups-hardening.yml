@@ -74,7 +74,7 @@
       failed_when:
         - gpasswd_result.rc != 0
         - "'is not a member of' not in gpasswd_result.stderr"
-      notify: log_docker_user_removal
+      notify: Log_docker_user_removal
 
     # - name: Remove all users from docker group
     #   command: gpasswd -d {{ item }} docker
@@ -86,7 +86,7 @@
     #   failed_when:
     #     - gpasswd_result.rc != 0
     #     - "'is not a member of' not in gpasswd_result.stderr"
-    #   notify: log_docker_user_removal
+    #   notify: Log_docker_user_removal
 
     - name: Ensure docker group is empty (verification)
       getent:
