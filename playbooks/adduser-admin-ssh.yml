@@ -43,7 +43,7 @@
       notify: Restart ssh
 
   handlers:
-    - name: Restart SSH to apply changes
+    - name: Restart ssh
       service:
         name: ssh
         state: restarted
