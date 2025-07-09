@@ -68,10 +68,10 @@
     msg: "Docker is not running."
   when: docker_service_result is failed
 
-- name: Add user to Docker group
-  ansible.builtin.user:
-    name: "{{ admin_user }}"
-    groups: docker
-    append: true
-    create_home: false
-    shell: /bin/bash
+# - name: Add user to Docker group
+#   ansible.builtin.user:
+#     name: "{{ admin_user }}"
+#     groups: docker
+#     append: true
+#     create_home: false
+#     shell: /bin/bash
