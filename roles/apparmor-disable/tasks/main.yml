@@ -1,9 +1,9 @@
-- name: Check GRUB_CMDLINE_LINUX_DEFAULT
+- name: Check current GRUB_CMDLINE_LINUX_DEFAULT
   shell: grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub || true
   register: grub_cmdline
   changed_when: false
 
-- name: Backup grub if it is by default
+- name: Backup grub if it's default (quiet only)
   copy:
     src: /etc/default/grub
     dest: /etc/default/grub.bak
@@ -15,17 +15,16 @@
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
-    line: "{{ grub_cmdline.stdout | regex_replace('apparmor=0', '') | regex_replace('\"$', ' apparmor=0\"') }}"
+    line: >-
+      {{
+        grub_cmdline.stdout
+        | regex_replace(' apparmor=0', '')
+        | regex_replace('\"$', ' apparmor=0\"')
+      }}
     backrefs: false
   when: "'apparmor=0' not in grub_cmdline.stdout"
   register: grub_modified
+  notify:
+    - Update grub
+    - Reboot system
 
-- name: Update grub if needed
-  command: update-grub
-  when: grub_modified.changed
-
-- name: Reboot if needed
-  reboot:
-    msg: "Redémarrage pour désactiver AppArmor"
-    pre_reboot_delay: 5
-  when: grub_modified.changed

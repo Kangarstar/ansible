@@ -1,0 +1,6 @@
+---
+- name: Disable apparmor
+  hosts: [swarm]
+  become: true
+  roles:
+    - role: apparmor-disable

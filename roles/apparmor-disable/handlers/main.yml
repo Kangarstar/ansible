@@ -1,0 +1,8 @@
+---
+- name: Update grub
+  command: update-grub
+
+- name: Reboot system
+  reboot:
+    msg: "Redémarrage pour désactiver AppArmor"
+    pre_reboot_delay: 5
