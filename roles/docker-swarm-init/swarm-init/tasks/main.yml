@@ -4,11 +4,11 @@
     state: started
     enabled: true
 
-- name: Ensure User is in Docker group
-  user:
-    name: "{{ admin_user }}"
-    groups: docker
-    append: true
+# - name: Ensure User is in Docker group
+#   user:
+#     name: "{{ admin_user }}"
+#     groups: docker
+#     append: true
 
 # - name: Reset SSH connection to apply new group
 #   meta: reset_connection

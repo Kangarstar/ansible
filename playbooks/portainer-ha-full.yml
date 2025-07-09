@@ -1,15 +1,5 @@
 ---
-- name: Setup SSH link and Ansible user
-  hosts: [swarm]
-  become: true
-  vars:
-    ssh_pubkey: ""
-  roles:
-    - role: adduser-admin-ssh
-
-# MicroCeph High Available Storage
-
-- name: Prepare nodes for MicroCeph
+- name: Prepare nodes
   hosts: [swarm]
   become: true
   roles:
