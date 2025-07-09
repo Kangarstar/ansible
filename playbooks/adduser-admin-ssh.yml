@@ -32,3 +32,18 @@
         owner: "{{ admin_user }}"
         group: "{{ admin_user }}"
         mode: '0600'
+
+    - name: Setup passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+      notify: Restart ssh
+
+  handlers:
+    - name: Restart SSH to apply changes
+      service:
+        name: ssh
+        state: restarted
