@@ -14,13 +14,7 @@
   when: "'portainer' in stack_list.stdout_lines"
   run_once: true
   register: stack_removed
-
-# Attendre que la stack soit complètement supprimée
-- name: Wait for stack removal
-  ansible.builtin.pause:
-    seconds: 5
-  when: stack_removed.changed
-  run_once: true
+  notify: Wait for stack removal
 
 # Vérifier si le réseau existe déjà
 - name: Check if network exists

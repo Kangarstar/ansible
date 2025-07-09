@@ -1,0 +1,5 @@
+- name: Wait for stack removal
+  ansible.builtin.pause:
+    seconds: 5
+  run_once: true
+  changed_when: false
