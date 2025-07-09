@@ -68,11 +68,25 @@
       when:
         - docker_group_check.ansible_facts.getent_group.docker is defined
         - docker_members.ansible_facts.getent_group.docker[2] | length > 0
+        - item in docker_members.ansible_facts.getent_group.docker[2].split(',')
       register: gpasswd_result
+      changed_when: "'is not a member of' not in gpasswd_result.stderr"
       failed_when:
         - gpasswd_result.rc != 0
         - "'is not a member of' not in gpasswd_result.stderr"
       notify: log_docker_user_removal
+
+    # - name: Remove all users from docker group
+    #   command: gpasswd -d {{ item }} docker
+    #   loop: "{{ docker_members.ansible_facts.getent_group.docker[2].split(',') | select('match', '.+') | list }}"
+    #   when:
+    #     - docker_group_check.ansible_facts.getent_group.docker is defined
+    #     - docker_members.ansible_facts.getent_group.docker[2] | length > 0
+    #   register: gpasswd_result
+    #   failed_when:
+    #     - gpasswd_result.rc != 0
+    #     - "'is not a member of' not in gpasswd_result.stderr"
+    #   notify: log_docker_user_removal
 
     - name: Ensure docker group is empty (verification)
       getent:
