@@ -12,7 +12,7 @@
 - name: Add GitHub's SSH host key to known_hosts
   known_hosts:
     name: '[ssh.github.com]:443'
-    key: "{{ github_known_host_key }}"
+    key: "{{ github_known_host_key | join('') }}"
     state: present
   become_user: "{{ admin_user }}"
   become: true
