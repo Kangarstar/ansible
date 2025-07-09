@@ -9,14 +9,6 @@
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Add GitHub's SSH host key to known_hosts
-  known_hosts:
-    name: '[ssh.github.com]:443'
-    key: "{{ github_known_host_key | join('') }}"
-    state: present
-  become_user: "{{ admin_user }}"
-  become: true
-
 - name: Clone or update the Git repository
   git:
     repo: "{{ repo_url }}"
