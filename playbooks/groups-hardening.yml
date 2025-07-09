@@ -76,18 +76,6 @@
         - "'is not a member of' not in gpasswd_result.stderr"
       notify: Log_docker_user_removal
 
-    # - name: Remove all users from docker group
-    #   command: gpasswd -d {{ item }} docker
-    #   loop: "{{ docker_members.ansible_facts.getent_group.docker[2].split(',') | select('match', '.+') | list }}"
-    #   when:
-    #     - docker_group_check.ansible_facts.getent_group.docker is defined
-    #     - docker_members.ansible_facts.getent_group.docker[2] | length > 0
-    #   register: gpasswd_result
-    #   failed_when:
-    #     - gpasswd_result.rc != 0
-    #     - "'is not a member of' not in gpasswd_result.stderr"
-    #   notify: Log_docker_user_removal
-
     - name: Ensure docker group is empty (verification)
       getent:
         database: group
@@ -124,13 +112,31 @@
       debug:
         msg: "Admin group created successfully: {{ admin_group_check.ansible_facts.getent_group[admin_group] }}"
 
-    - name: Display docker group security status
-      debug:
-        msg: |
-          Docker group security check:
-          - Docker group exists: {{ docker_group_check.ansible_facts.getent_group.docker is defined }}
-          - Docker group members removed: {{ docker_members.ansible_facts.getent_group.docker[2] if docker_members.ansible_facts.getent_group.docker is defined else 'N/A' }}
-          - Current docker group status: {{ docker_members_verify.ansible_facts.getent_group.docker[2] if docker_members_verify.ansible_facts.getent_group.docker is defined else 'Group not found' }}
+- name: Display docker group security status
+  debug:
+    msg: |
+      Docker group security check:
+      - Docker group exists: {{
+          docker_group_check.ansible_facts.getent_group.docker is defined
+        }}
+      - Docker group members removed: {{
+          docker_members.ansible_facts.getent_group.docker[2]
+          if docker_members.ansible_facts.getent_group.docker is defined
+          else 'N/A'
+        }}
+      - Current docker group status: {{
+          docker_members_verify.ansible_facts.getent_group.docker[2]
+          if docker_members_verify.ansible_facts.getent_group.docker is defined
+          else 'Group not found'
+        }}
+
+    # - name: Display docker group security status
+    #   debug:
+    #     msg: |
+    #       Docker group security check:
+    #       - Docker group exists: {{ docker_group_check.ansible_facts.getent_group.docker is defined }}
+    #       - Docker group members removed: {{ docker_members.ansible_facts.getent_group.docker[2] if docker_members.ansible_facts.getent_group.docker is defined else 'N/A' }}
+    #       - Current docker group status: {{ docker_members_verify.ansible_facts.getent_group.docker[2] if docker_members_verify.ansible_facts.getent_group.docker is defined else 'Group not found' }}
 
   handlers:
     - name: Log_docker_user_removal
