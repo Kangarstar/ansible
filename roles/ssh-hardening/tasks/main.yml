@@ -12,7 +12,7 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
-    backrefs: yes
+    backrefs: true
   with_items:
     # force l'utilisation de SSHv2
     - { regexp: '^#?Protocol', line: 'Protocol 2' }

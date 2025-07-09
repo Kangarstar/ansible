@@ -118,6 +118,6 @@
           - Current docker group status: {{ docker_members_verify.ansible_facts.getent_group.docker[2] if docker_members_verify.ansible_facts.getent_group.docker is defined else 'Group not found' }}
 
   handlers:
-    - name: log_docker_user_removal
+    - name: Log_docker_user_removal
       debug:
         msg: "Security Alert: Removed users from docker group for security compliance"

@@ -27,7 +27,7 @@
         create_home: true
         password: "{{ new_password }}"
         groups: "{{ new_group }}"
-        append: yes
+        append: true
 
     - name: Ensure SSH key directory exists
       file:
