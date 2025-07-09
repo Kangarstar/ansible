@@ -54,3 +54,4 @@
       shell: apparmor_parser -r /var/lib/snapd/apparmor/profiles/snap-confine.snapd.*
       args:
         executable: /bin/bash
+      changed_when: false
