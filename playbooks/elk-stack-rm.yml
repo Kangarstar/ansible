@@ -10,5 +10,8 @@
     repo_url: "ssh://git@ssh.github.com:443/NTE-Airport-DSI/docker-elk.git"
     repo_dest: "/opt/docker-elk"
     script_path: "./swarm-rm.sh"
+    github_known_host_key: >
+      '[ssh.github.com]:443 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YUYD2vJdl2qGnF8JYBZBTKBrpCMYmM8mJrfOiVYJNcXFGAAGlvjSo7KvGYWlMrgjjSMqZP6Yf3I8oVqUEEHJ5KJ/1pJN5K9IjpjdqJOEPYqNZyq8J4QGRvl0JqZuOoVdnMBXHpEKJqBLQbGDXJfZcGNxHZ4kFNuqsKCYYdx7oJRF+1HYjSPqJ8DaAhWnxzKfKuEXqqAqiWNYvtXUHrOLxJJdObHHGRvPQ0YE5yNmDkEfFKzVlPRqOQ4PNQJAhBfm6gZzEtRSF1JlnYaYLyJBJDdcKCZnFIAYjDyWvOOZu/8WJ2vqLpD4FHzTzXzwT5IQzOPGCmKXJ5j5qBKRD3YNZZaLqEG8uCmTXHNqzNnqOzEqo='
+
   roles:
     - elk-stack-rm
