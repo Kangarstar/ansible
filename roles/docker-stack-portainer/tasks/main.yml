@@ -21,6 +21,7 @@
     seconds: 5
   when: stack_removed.changed
   run_once: true
+  changed_when: false
 
 # Vérifier si le réseau existe déjà
 - name: Check if network exists
