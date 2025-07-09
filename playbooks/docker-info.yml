@@ -7,10 +7,12 @@
     - name: Run 'docker ps'
       ansible.builtin.command: docker ps
       register: docker_ps_output
+      changed_when: false
 
     - name: Run 'docker stats --no-stream'
       ansible.builtin.command: docker stats --no-stream
       register: docker_stats_output
+      changed_when: false
 
     - name: Display Docker PS Output
       ansible.builtin.debug:
