@@ -2,7 +2,6 @@
 # Il déploie un agent elasticsearch, metricbeat et filebeat sur chaque noeud de la swarm ainsi que l'interface kibana sur un seul noeud de la swarm
 # Ce role est a lancer seulement après avoir installé docker et docker compose, initialisé la swarm et configuré du stockage
 
-
 - name: Ensure git is installed
   apt:
     name: git
@@ -31,7 +30,6 @@
   file:
     path: "{{ repo_dest }}/{{ script_path }}"
     mode: '0755'
-
 
 - name: Remove Elastic Stack
   command: "./{{ script_path }}"

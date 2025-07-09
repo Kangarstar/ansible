@@ -27,4 +27,3 @@
   notify:
     - Update grub
     - Reboot system
-
