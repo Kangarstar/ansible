@@ -15,13 +15,13 @@
   roles:
     - role: ntp-setup-sync
     - role: common-packages-install
-    - role: apparmor-disable
+    # - role: apparmor-disable
 
-- name: Install Microceph
-  hosts: [swarm]
-  become: true
-  roles:
-    - role: microceph-install
+# - name: Install Microceph
+#   hosts: [swarm]
+#   become: true
+#   roles:
+#     - role: microceph-install
 
 # - name: Setup Apparmor for Microceph
 #   hosts: [swarm]
@@ -29,33 +29,33 @@
 #   roles:
 #     - role: apparmor-setup
 
-- name: Bootstrap MicroCeph cluster on primary node
-  hosts: [swarm]
-  become: true
-  roles:
-    - role: microceph-cluster-init
+# - name: Bootstrap MicroCeph cluster on primary node
+#   hosts: [swarm]
+#   become: true
+#   roles:
+#     - role: microceph-cluster-init
 
 
-- name: Configure MicroCeph disks on all nodes
-  hosts: [swarm]
-  become: true
-  roles:
-# ONLY USE ONE OR THE OTHER
-    - role: microceph-disk-setup-auto
+# - name: Configure MicroCeph disks on all nodes
+#   hosts: [swarm]
+#   become: true
+#   roles:
+# # ONLY USE ONE OR THE OTHER
+#     - role: microceph-disk-setup-auto
     # - role: microceph-disk-setup-manual
 
 
-- name: Initialize CephFS on primary node
-  hosts: swarm[0]
-  become: true
-  roles:
-    - role: microceph-cephfs-setup
+# - name: Initialize CephFS on primary node
+#   hosts: swarm[0]
+#   become: true
+#   roles:
+#     - role: microceph-cephfs-setup
 
-- name: Configure CephFS mount points on all nodes
-  hosts: [swarm]
-  become: true
-  roles:
-    - role: microceph-cephfs-mount
+# - name: Configure CephFS mount points on all nodes
+#   hosts: [swarm]
+#   become: true
+#   roles:
+#     - role: microceph-cephfs-mount
 
 - name: Install Docker and add docker user to docker group
   hosts: [swarm]
@@ -65,9 +65,6 @@
     docker_codename: "{{ ansible_facts['distribution_release'] }}"
   roles:
     - docker-setup
-
-# Initialize docker swarm
-
 
 - name: Initialize Docker Swarm
   hosts: [swarm]

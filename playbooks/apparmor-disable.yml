@@ -1,3 +1,6 @@
+# Ce playbook va désactiver apparmor. A seulement utiliser si vous avez des conflits avec apparmor
+# /!\ ATTENTION, ceci peut peut casser des élements en place comme docker
+# Il est recommandé d'executer ce playbook quand il n'y a pas de services configurés sur les machines
 ---
 - name: Disable apparmor
   hosts: [swarm]

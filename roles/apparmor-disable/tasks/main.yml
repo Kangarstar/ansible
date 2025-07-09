@@ -1,3 +1,7 @@
+# Ce role va désactiver apparmor. A seulement utiliser si vous avez des conflits avec apparmor
+# /!\ ATTENTION, ceci peut peut casser des élements en place comme docker
+# Il est recommandé d'executer ce playbook au début de la configuration des machines 
+
 - name: Check current GRUB_CMDLINE_LINUX_DEFAULT
   shell: grep '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub || true
   register: grub_cmdline
