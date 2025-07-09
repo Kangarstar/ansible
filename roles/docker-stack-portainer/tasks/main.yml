@@ -33,13 +33,12 @@
   run_once: true
 
 # S'assurer que le répertoire de données existe
-- name: Ensure /mnt/cephfs/portainer directory exists
-  ansible.builtin.file:
-    path: /mnt/cephfs/{{ share_name }}
-    state: directory
-    owner: root
-    group: docker
-    mode: '0755'
+# - name: Ensure /mnt/cephfs/portainer directory exists
+#   ansible.builtin.file:
+#     path: /mnt/cephfs/{{ share_name }}
+#     state: directory
+#     owner: root
+#     mode: '0755'
 
 # Déployer la stack
 - name: Deploy Portainer stack
