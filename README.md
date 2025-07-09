@@ -29,19 +29,6 @@ Pour les modifications et ajouts de code ansible il est intéressant de noter qu
   Certains privilèges puissant comme la gestion des droits et des utilisateurs y sont restreints
   De plus, le changement d'utilisateur est bloqué
 
-- **elk-stack-setup.yml**    
-  Ce playbook installe le repo github docker-elk et exécute le script de mise en place du cluster ELK
-  /!\ Le .env et les secrets doivent être renseignés et/ou modifiés avant execution
-  Comme prérequis les playbooks  `Docker-engine-setup.yml` et `Docker-swarm-init.yml` doivent avoir été exécutés
-  
-  Sont inclus:
-  - 3 conteneurs elasticsearch
-  - 1 conteneur kibana
-  - 1 conteneur logstash (facultatif)
-  - 1 conteneur fleet-server
-  - 3 conteneurs metricbeat
-  - 3 conteneurs filebeat
-
 - **elk-stack-rm.yml**
   Ce playbook installe le repo github docker-elk et exécute le script de deletion du cluster ELK
   
@@ -60,6 +47,19 @@ Pour les modifications et ajouts de code ansible il est intéressant de noter qu
 
 - **docker-stack-portainer.yml** :  
   Déploie un stack Docker pour Portainer en haute disponibilité.
+
+- **elk-stack-setup.yml**    
+  Ce playbook installe le repo github docker-elk et exécute le script de mise en place du cluster ELK.
+  /!\ Le .env et les secrets doivent être renseignés et/ou modifiés avant execution.   
+  Comme prérequis les playbooks  `Docker-engine-setup.yml` et `Docker-swarm-init.yml` doivent avoir été exécutés précédemment.
+  
+  Sont inclus:
+  - 3 conteneurs elasticsearch
+  - 1 conteneur kibana
+  - 1 conteneur logstash (facultatif)
+  - 1 conteneur fleet-server
+  - 3 conteneurs metricbeat
+  - 3 conteneurs filebeat
 
 ### Stockage
 
