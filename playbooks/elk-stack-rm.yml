@@ -6,7 +6,7 @@
   become: true
   vars:
     network_name: elk
-    # share_name: 
+    # share_name:
     repo_url: "ssh://git@ssh.github.com:443/NTE-Airport-DSI/docker-elk.git"
     repo_dest: "/opt/docker-elk"
     script_path: "./swarm-rm.sh"

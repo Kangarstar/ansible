@@ -38,6 +38,7 @@
         dest: /etc/pam.d/su.backup
         remote_src: true
         backup: true
+        mode: '0644'
 
     - name: Configure PAM to restrict su command to sudo group members
       lineinfile:

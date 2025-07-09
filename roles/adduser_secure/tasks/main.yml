@@ -1,5 +1,5 @@
 ---
-- name: Add user 
+- name: Add user
   become: true
   block:
     - name: Ensure the group exists
@@ -14,4 +14,4 @@
         create_home: true
         password: "{{ new_password }}"
         groups: "{{ new_group }}"
-        append: yes
+        append: true
