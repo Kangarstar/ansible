@@ -6,19 +6,28 @@
 - name: Install apt packages
   ansible.builtin.apt:
     name:
-      - iftop
-      - htop
-      - btop
+      - apparmor
+      - binutils
+      - busybox
+      - cpio
+      - cron
+      - dash
+      - discover
       - git
+      - dmidecode
       - gnupg
-      - lsb-release
-      - sl
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - python3-pip
-      - python3-jsondiff
-      - python3-yaml
+      - less
+      - libxml2
+      - nano
+      - patch
+      - perl
+      - procps
+      - sudo
+      - tar
+      - traceroute
+      - unzip
+      - util-linux
+      - wget
     state: present
   register: apt_result
   retries: 5
@@ -30,7 +39,6 @@
     name: 
       - snapd
     state: absent
-
 
 - name: Fail if installation was unsuccessful
   fail:
