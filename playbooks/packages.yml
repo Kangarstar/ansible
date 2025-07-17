@@ -1,0 +1,6 @@
+---
+- name: Install secure versions of packages
+  hosts: [swarm]
+  become: true
+  roles:
+    - role: security-packages-install
