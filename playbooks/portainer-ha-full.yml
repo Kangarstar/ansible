@@ -32,7 +32,7 @@
 #   roles:
 # # ONLY USE ONE OR THE OTHER
 #     - role: microceph-disk-setup-auto
-    # - role: microceph-disk-setup-manual
+#     - role: microceph-disk-setup-manual
 
 
 # - name: Initialize CephFS on primary node
