@@ -14,32 +14,6 @@
       register: docker_stats_output
       changed_when: false
 
-    - name: Display Docker PS Output
-      ansible.builtin.debug:
-        var: docker_ps_output.stdout_lines
-
-    - name: Display Docker Stats Output
-      ansible.builtin.debug:
-        var: docker_stats_output.stdout_lines
-
-    # - name: Run aggregate Docker CPU and RAM usage calculation
-    #   ansible.builtin.shell: |
-    #     docker stats --no-stream --format "{{'{{.CPUPerc}} {{.MemUsage}}'}}" | \
-    #     awk '{
-    #       cpu += substr($1, 1, length($1)-1);
-    #       split($2, mem, /[A-Za-z]+/);
-    #       unit = substr($2, length(mem[1])+1, 1);
-    #       val = mem[1];
-    #       if (unit == "G") val *= 1024;
-    #       else if (unit == "K") val /= 1024;
-    #       mem_total += val;
-    #     }
-    #     END {
-    #       printf "Total CPU usage: %.2f%%\nTotal RAM usage: %.2f MiB\n", cpu, mem_total;
-    #     }'
-    #   register: docker_agg_usage
-    #   changed_when: false
-
     - name: Run aggregate Docker CPU and RAM usage calculation with percentage
       ansible.builtin.shell: |
         total_mem=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024}');  # in MiB
@@ -60,6 +34,15 @@
         }'
       register: docker_agg_usage
       changed_when: false
+
+
+    - name: Display Docker PS Output
+      ansible.builtin.debug:
+        var: docker_ps_output.stdout_lines
+
+    - name: Display Docker Stats Output
+      ansible.builtin.debug:
+        var: docker_stats_output.stdout_lines
 
     - name: Display aggregate Docker CPU and RAM usage
       ansible.builtin.debug:
