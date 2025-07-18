@@ -1,3 +1,4 @@
+---
 - name: Create CephFS data pool
   command: "microceph.ceph osd pool create {{ cephfs_data_pool }} {{ cephfs_pg_num }}"
   register: create_data_pool

@@ -2,6 +2,7 @@
 # sélectionner les diques a ajouter dans l'inventory.ini
 # Attention: ce role fonctionne seulement si tous les noeuds ont sur leur disque la même lettre
 # Tous /dev/sda par exemple
+---
 - name: Check if MicroCeph database is initialized
   command: "microceph status"
   register: microceph_status

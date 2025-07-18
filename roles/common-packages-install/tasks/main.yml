@@ -27,10 +27,9 @@
 
 - name: Remove the package if installed
   ansible.builtin.apt:
-    name: 
+    name:
       - snapd
     state: absent
-
 
 - name: Fail if installation was unsuccessful
   fail:

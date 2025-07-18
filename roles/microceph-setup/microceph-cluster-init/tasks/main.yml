@@ -1,3 +1,4 @@
+---
 - name: Check if MicroCeph is already bootstrapped
   command: microceph status
   register: microceph_status

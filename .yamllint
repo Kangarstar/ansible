@@ -6,3 +6,4 @@ rules:
     max: 256
     level: warning
   braces: disable
+  brackets: disable

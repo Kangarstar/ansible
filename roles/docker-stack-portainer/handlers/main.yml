@@ -1,3 +1,4 @@
+---
 - name: Wait for stack removal
   ansible.builtin.pause:
     seconds: 5
