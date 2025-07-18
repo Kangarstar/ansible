@@ -24,7 +24,7 @@
 
     - name: Run aggregate Docker CPU and RAM usage calculation
       ansible.builtin.shell: |
-        docker stats --no-stream --format "{{.CPUPerc}} {{.MemUsage}}" | \
+        docker stats --no-stream --format "{{'{{.CPUPerc}} {{.MemUsage}}'}}" | \
         awk '{
           cpu += substr($1, 1, length($1)-1);
           split($2, mem, /[A-Za-z]+/);
@@ -39,6 +39,7 @@
         }'
       register: docker_agg_usage
       changed_when: false
+
 
     - name: Display aggregate Docker CPU and RAM usage
       ansible.builtin.debug:
