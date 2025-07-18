@@ -44,6 +44,6 @@
       ansible.builtin.debug:
         var: docker_stats_output.stdout_lines
 
-    - name: Display aggregate Docker CPU and RAM usage
+    - name: Display total Docker CPU and RAM usage
       ansible.builtin.debug:
         var: docker_agg_usage.stdout_lines
