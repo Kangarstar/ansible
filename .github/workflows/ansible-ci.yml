@@ -28,7 +28,7 @@ jobs:
 
       - name: Lint Ansible YAML files
         run: |
-          yamllint . --exclude .github
+          yamllint .
           ansible-lint
 
     # - name: Syntax check playbooks

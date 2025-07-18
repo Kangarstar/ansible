@@ -7,3 +7,6 @@ rules:
     level: warning
   braces: disable
   brackets: disable
+
+ignore: |
+  .github/
