@@ -36,8 +36,11 @@
           printf "Total CPU usage: %.2f%%\nTotal RAM usage: %.2f MiB (%.2f%% of system RAM)\n", cpu, mem_total, mem_percent;
         }'
         {% endraw %}
+      args:
+        executable: /bin/bash
       register: docker_agg_usage
       changed_when: false
+
 
     # - name: Run aggregate Docker CPU and RAM usage calculation with percentage
     #   ansible.builtin.shell: |
