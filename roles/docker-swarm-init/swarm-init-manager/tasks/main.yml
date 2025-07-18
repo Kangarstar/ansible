@@ -1,4 +1,5 @@
 # Ce role initialize le mode cluster de Docker (swarm)
+---
 - name: Check if Docker Swarm is already initialized
   command: docker info --format '{% raw %}{{.Swarm.LocalNodeState}}{% endraw %}'
   register: swarm_state
