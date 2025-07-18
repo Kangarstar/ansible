@@ -1,3 +1,4 @@
+---
 - name: Ensure Docker is started and enabled
   service:
     name: docker

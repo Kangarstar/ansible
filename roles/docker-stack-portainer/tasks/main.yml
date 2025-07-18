@@ -1,6 +1,7 @@
 # Ce role déploie portainer en Haute disponibilité sur un cluster
 # Il déploie un agent portainer sur chaque noeud de la swarm et l'interface portainer sur un noeud de la swarm
 # Ce role est a lancer seulement après avoir installé docker et docker compose, initialisé la swarm et configuré microceph
+---
 - name: Check if 'portainer' stack exists
   ansible.builtin.command: docker stack ls --format '{{ "{{.Name}}" }}'
   register: stack_list
