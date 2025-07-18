@@ -17,6 +17,8 @@
 - name: Run aggregate Docker CPU and RAM usage calculation with percentage
   ansible.builtin.shell: |
     {% raw %}
+    set -euo pipefail
+
     total_mem=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024}');  # in MiB
     docker stats --no-stream --format "{{.CPUPerc}} {{.MemUsage}}" | \
     awk -v total_mem="$total_mem" '
