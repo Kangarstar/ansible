@@ -86,11 +86,11 @@
         - docker_members_verify.ansible_facts.getent_group.docker is defined
         - docker_members_verify.ansible_facts.getent_group.docker[2] | length > 0
 
-    - name: Remove docker group entirely (optional - uncomment if desired)
-      group:
-        name: docker
-        state: absent
-      when: docker_group_check.ansible_facts.getent_group.docker is defined
+    # - name: Remove docker group entirely (optional - uncomment if desired)
+    #   group:
+    #     name: docker
+    #     state: absent
+    #   when: docker_group_check.ansible_facts.getent_group.docker is defined
       # Uncomment the line above to completely remove the docker group
 
     - name: Verify sudoers file syntax
