@@ -3,8 +3,8 @@
   hosts: [swarm]
   become: true
   roles:
-    - role: ntp-setup-sync
-    - role: common-packages-install
+    - ntp-setup-sync
+    - common-packages-install
     # - role: apparmor-disable
 
 # - name: Install Microceph
@@ -60,19 +60,19 @@
   hosts: [swarm]
   become: true
   roles:
-    - role: swarm-init
+    - swarm-init
 
 - name: Initialize the first manager
   hosts: swarm[0]
   become: true
   roles:
-    - role: swarm-init-manager
+    - swarm-init-manager
 
 - name: Join additional managers to the swarm
   hosts: swarm[1:]
   become: true
   roles:
-    - role: swarm-managers-join
+    - swarm-managers-join
 
 # - name: Join workers to the swarm
 #   hosts: swarm_workers
@@ -85,7 +85,7 @@
   # hosts: swarm_managers[0]
   become: true
   roles:
-    - role: swarm-verify
+    - swarm-verify
 
 - name: Deploy Portainer and Agent services
   hosts: [swarm]
