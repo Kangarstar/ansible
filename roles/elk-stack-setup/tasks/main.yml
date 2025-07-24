@@ -8,26 +8,25 @@
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Start SSH agent and add deploy key
+- name: Clone or update the Git repository with SSH agent
   shell: |
     eval "$(ssh-agent -s)"
     ssh-add {{ deploy_key_path }}
+    git clone {{ repo_url }} {{ repo_dest }} || (cd {{ repo_dest }} && git pull)
   become_user: "{{ admin_user }}"
   become: true
   environment:
     HOME: "/home/{{ admin_user }}"
+  args:
+    creates: "{{ repo_dest }}/.git"
 
-- name: Clone or update the Git repository
-  git:
-    repo: "{{ repo_url }}"
-    dest: "{{ repo_dest }}"
-    version: main
-    force: true
-    key_file: "/home/{{ admin_user }}/.ssh/deploy_key"
-  become_user: "{{ admin_user }}"
+- name: Fix ownership of git repository
+  file:
+    path: "{{ repo_dest }}"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    recurse: true
   become: true
-  environment:
-    HOME: "/home/{{ admin_user }}"
 
 - name: Check if 'elk' stack exists
   ansible.builtin.command: docker stack ls --format '{{ "{{.Name}}" }}'
