@@ -10,7 +10,7 @@
     # share_name:
     repo_url: "ssh://git@ssh.github.com:443/NTE-Airport-DSI/docker-elk.git"
     repo_dest: "/opt/docker-elk"
-    script_path: "./swarm-rm.sh"
+    script_path: "./elk-setup.sh"
 
   roles:
     - elk-stack-rm
