@@ -8,6 +8,15 @@
     state: present
   when: ansible_os_family == "Debian"
 
+- name: Start SSH agent and add deploy key
+  shell: |
+    eval "$(ssh-agent -s)"
+    ssh-add {{ deploy_key_path }}
+  become_user: "{{ admin_user }}"
+  become: true
+  environment:
+    HOME: "/home/{{ admin_user }}"
+
 - name: Clone or update the Git repository
   git:
     repo: "{{ repo_url }}"
